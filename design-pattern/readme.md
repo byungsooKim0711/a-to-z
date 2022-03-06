@@ -5,10 +5,10 @@
 | 패턴 종류 | 이름                                | 예제                                                       |
 | :---------: | ----------------------------------- | ---------------------------------------------------------- |
 | 생성패턴  | Singleton (싱글톤)                  |                                                            |
-^^           | Builder (빌더)                      |                                                            |
-^^           | Abstract factory (추상 팩토리)      |                                                            |
-^^          | Factory method (팩토리 메서드)      |                                                            |
-^^          | Prototype (프로토타입)              |                                                            |
+|           | Builder (빌더)                      |                                                            |
+|           | Abstract factory (추상 팩토리)      |                                                            |
+|          | Factory method (팩토리 메서드)      |                                                            |
+|          | Prototype (프로토타입)              |                                                            |
 | 구조패턴  | Adaptor (어댑터)                    | [어댑터 패턴 예제](src/main/java/org/kimbs/design/adapter) |
 |           | Bridge (브릿지)                     |                                                            |
 |           | Composite (컴포짓)                  |                                                            |
