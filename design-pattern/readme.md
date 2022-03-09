@@ -5,7 +5,7 @@
 | 패턴 종류 | 이름                                | 예제                                                       |
 | :---------: | ----------------------------------- | ---------------------------------------------------------- |
 | 생성패턴  | Singleton (싱글톤)                  |                                                            |
-|           | Builder (빌더)                      |                                                            |
+|           | Builder (빌더)                      |[빌터 패턴 예제](src/main/java/org/kimbs/design/creational/builder)                                                     |
 |           | Abstract factory (추상 팩토리)      |                                                            |
 |          | Factory method (팩토리 메서드)      |                                                            |
 |          | Prototype (프로토타입)              |                                                            |
@@ -20,7 +20,7 @@
 |           | Command (커맨드)                    |                                                            |
 |           | Interpreter (인터프리터)            |                                                            |
 |           | Strategy (전략)                     |                                                            |
-|           | Template method (템플릿 메서드)     |                                                            |
+|           | Template method (템플릿 메서드)     | [템플릿 메서드 예제](src/main/java/org/kimbs/design/behavioral)                                                |
 |           | Iterator (이터레이터)               |                                                            |
 |           | Observer (옵저버)                   |                                                            |
 |           | Mediator (중재자)                   |                                                            |
