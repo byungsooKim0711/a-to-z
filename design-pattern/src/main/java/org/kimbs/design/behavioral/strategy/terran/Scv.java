@@ -8,8 +8,4 @@ public class Scv extends WorkUnit<TerranBuildStrategy> {
         super(name);
     }
 
-    @Override
-    public void setBuildStrategy(TerranBuildStrategy buildStrategy) {
-        this.buildStrategy = buildStrategy;
-    }
 }

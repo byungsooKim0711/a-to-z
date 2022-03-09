@@ -6,7 +6,6 @@ public abstract class WorkUnit<B extends BuildStrategy> {
 
     private WorkStrategy workStrategy;
     private VoiceStrategy voiceStrategy;
-    protected B buildStrategy;
 
     public WorkUnit(String name) {
         this.name = name;
@@ -20,8 +19,6 @@ public abstract class WorkUnit<B extends BuildStrategy> {
         this.voiceStrategy = voiceStrategy;
     }
 
-    protected abstract void setBuildStrategy(B buildStrategy);
-
     public void voice() {
         this.voiceStrategy.voice();
     }
@@ -30,7 +27,7 @@ public abstract class WorkUnit<B extends BuildStrategy> {
         this.workStrategy.work();
     }
 
-    public void build() {
-        this.buildStrategy.build();
+    public void build(B buildStrategy) {
+        buildStrategy.build();
     }
 }

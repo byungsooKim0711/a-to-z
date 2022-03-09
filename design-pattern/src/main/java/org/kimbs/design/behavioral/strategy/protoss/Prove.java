@@ -8,8 +8,4 @@ public class Prove extends WorkUnit<ProtossBuildStrategy> {
         super(name);
     }
 
-    @Override
-    protected void setBuildStrategy(ProtossBuildStrategy buildStrategy) {
-        this.buildStrategy = buildStrategy;
-    }
 }

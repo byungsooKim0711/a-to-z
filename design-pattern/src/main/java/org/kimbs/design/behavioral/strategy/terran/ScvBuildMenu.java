@@ -9,4 +9,8 @@ public class ScvBuildMenu {
     public static TerranBuildStrategy supplyDepot() {
         return new SupplyDepot();
     }
+
+    public static TerranBuildStrategy barracks() {
+        return new Barracks();
+    }
 }

@@ -8,8 +8,4 @@ public class Drone extends WorkUnit<ZergBuildStrategy> {
         super(name);
     }
 
-    @Override
-    protected void setBuildStrategy(ZergBuildStrategy buildStrategy) {
-        this.buildStrategy = buildStrategy;
-    }
 }

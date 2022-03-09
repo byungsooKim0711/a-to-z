@@ -19,32 +19,23 @@ public class Application {
 
         WorkUnit<TerranBuildStrategy> scv = new Scv("scv");
         scv.setVoiceStrategy(new ScvVoice());
-        scv.setBuildStrategy(ScvBuildMenu.commandCenter());
         scv.voice();
-        scv.build();
-
-        scv.setBuildStrategy(ScvBuildMenu.supplyDepot());
-        scv.build();
-
-        scv.setBuildStrategy(ScvBuildMenu.supplyDepot());
-        scv.build();
+        scv.build(ScvBuildMenu.commandCenter());
+        scv.build(ScvBuildMenu.supplyDepot());
+        scv.build(ScvBuildMenu.barracks());
 
         System.out.println("---------------------------");
 
         WorkUnit<ProtossBuildStrategy> prove = new Prove("prove");
         prove.setVoiceStrategy(new ProveVoice());
-        prove.setBuildStrategy(ProveBuildMenu.nexus());
         prove.voice();
-        prove.build();
-
-        prove.setBuildStrategy(ProveBuildMenu.pylon());
-        prove.build();
+        prove.build(ProveBuildMenu.nexus());
+        prove.build(ProveBuildMenu.pylon());
 
         System.out.println("---------------------------");
 
         WorkUnit<ZergBuildStrategy> drone = new Drone("drone");
-        drone.setBuildStrategy(DroneBuildMenu.hatchery());
-        drone.build();
+        drone.build(DroneBuildMenu.hatchery());
 
         System.out.println("---------------------------");
     }
