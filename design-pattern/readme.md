@@ -19,10 +19,10 @@
 | 행동패턴  | Chain of responsibility (책임 연쇄) |                                                            |
 |           | Command (커맨드)                    |                                                            |
 |           | Interpreter (인터프리터)            |                                                            |
-|           | Strategy (전략)                     | [스트래티지 패턴](src/main/java/org/kimbs/design/behavioral/strategy)|
-|           | Template method (템플릿 메서드)     | [템플릿 메서드 예제](src/main/java/org/kimbs/design/behavioral/templateMethod)                                                |
-|           | Iterator (이터레이터)               |                                                            |
-|           | Observer (옵저버)                   |[옵저버 패턴](src/main/java/org/kimbs/design/behavioral/observer)|
+|           | Strategy (전략)                     | [스트래티지 패턴 예제](src/main/java/org/kimbs/design/behavioral/strategy)|
+|           | Template method (템플릿 메서드)     | [템플릿 메서드 패턴 예제](src/main/java/org/kimbs/design/behavioral/templateMethod)                                                |
+|           | Iterator (이터레이터)               | [이터레이터 패턴 예제](src/main/java/org/kimbs/design/behavioral/iterator)|
+|           | Observer (옵저버)                   |[옵저버 패턴 얘제](src/main/java/org/kimbs/design/behavioral/observer)|
 |           | Mediator (중재자)                   |                                                            |
 |           | Memento (메멘토)                    |                                                            |
 |           | State (상태)                        |                                                            |
