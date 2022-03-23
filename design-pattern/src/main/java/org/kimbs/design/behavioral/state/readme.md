@@ -12,3 +12,11 @@
   2. 아니면 entity 같은경우에 stateMachine 을 사용하나..?
   3. ...
 
+
+| 상태 패턴 구성요소 | 클래스 / 인터페이스                                          |
+| ------------------ | ------------------------------------------------------------ |
+| State              | TemplateStatus                                               |
+| ConcreteState      | RegisteredStatus<br />RejectStatus<br />ApprovalStatus<br />RequestStatus |
+| Context            | Template                                                     |
+| Client             | TemplateService                                              |
+
