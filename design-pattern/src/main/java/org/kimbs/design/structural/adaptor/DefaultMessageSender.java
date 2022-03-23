@@ -1,4 +1,4 @@
-package org.kimbs.design.adapter;
+package org.kimbs.design.structural.adaptor;
 
 public class DefaultMessageSender implements MessageSender {
 

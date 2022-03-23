@@ -9,13 +9,13 @@
 |           | Abstract factory (추상 팩토리)      |                                                            |
 |          | Factory method (팩토리 메서드)      |                                                            |
 |          | Prototype (프로토타입)              |                                                            |
-| 구조패턴  | Adaptor (어댑터)                    | [어댑터 패턴 예제](src/main/java/org/kimbs/design/adapter) |
+| 구조패턴  | Adaptor (어댑터)                    | [어댑터 패턴 예제](src/main/java/org/kimbs/design/structural/adaptor) |
 |           | Bridge (브릿지)                     |                                                            |
 |           | Composite (컴포짓)                  |                                                            |
 |           | Decorator (데코레이터)              |                                                            |
 |           | Facade (퍼사드)                     |                                                            |
 |           | Flyweight (플라이웨이트)            |                                                            |
-|           | Proxy (프록시)                      |                                                            |
+|           | Proxy (프록시)                      |[프록시 패턴 예제](src/main/java/org/kimbs/design/structural/proxy)|
 | 행동패턴  | Chain of responsibility (책임 연쇄) |                                                            |
 |           | Command (커맨드)                    |                                                            |
 |           | Interpreter (인터프리터)            |                                                            |
