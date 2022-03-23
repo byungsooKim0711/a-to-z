@@ -13,21 +13,18 @@ public class TemplateService {
 
         // 검수요청 상태 템플릿
         Template reqTemplate = new Template("템플릿2", "템플릿내용2", "template_code_req");
-        reqTemplate.setTemplateStatus(new RequestStatus(reqTemplate));
-        reqTemplate.changeStatus(Template.Status.REQ);
+        reqTemplate.changeStatus(Status.REQ);
         db.put("template_code_req", reqTemplate);
 
         // 승인 상태 템플릿
         Template aprTemplate = new Template("템플릿3", "템플릿내용3", "template_code_apr");
-        aprTemplate.setTemplateStatus(new ApprovalStatus(aprTemplate));
-        aprTemplate.changeStatus(Template.Status.APR);
+        aprTemplate.changeStatus(Status.APR);
         db.put("template_code_apr", aprTemplate);
 
         // 반려 상태 템플릿
         Template rejTemplate = new Template("템플릿4", "템플릿내용4", "template_code_rej");
-        rejTemplate.setTemplateStatus(new RejectStatus(rejTemplate));
-        rejTemplate.changeStatus(Template.Status.REJ);
-        db.put("template_code_rej", aprTemplate);
+        rejTemplate.changeStatus(Status.REJ);
+        db.put("template_code_rej", rejTemplate);
     }
 
     public Template getTemplate(String templateCode) {
@@ -40,28 +37,28 @@ public class TemplateService {
     }
 
     public Template requestTemplate(Template template) {
-        Template response = template.getTemplateStatus().requestTemplate(template);
+        Template response = template.getStatus().getTemplateStatus().requestTemplate(template);
 
         // doSomething...
-        System.out.println(String.format("code: %s 검수요청 완료.", template.getCode()));
+        System.out.printf("code: %s 검수요청 완료.%n", template.getCode());
 
         return response;
     }
 
     public Template cancelTemplate(Template template) {
-        Template response = template.getTemplateStatus().cancelTemplate(template);
+        Template response = template.getStatus().getTemplateStatus().cancelTemplate(template);
 
         // doSomething...
-        System.out.println(String.format("code: %s 검수취소 완료.", template.getCode()));
+        System.out.printf("code: %s 검수취소 완료.%n", template.getCode());
 
         return response;
     }
 
     public Template cancelApprovalTemplate(Template template) {
-        Template response = template.getTemplateStatus().cancelApprovalTemplate(template);
+        Template response = template.getStatus().getTemplateStatus().cancelApprovalTemplate(template);
 
         // doSomething...
-        System.out.println(String.format("code: %s 승인취소 완료.", template.getCode()));
+        System.out.printf("code: %s 승인취소 완료.%n", template.getCode());
 
         return response;
     }

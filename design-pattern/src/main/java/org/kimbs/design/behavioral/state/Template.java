@@ -2,14 +2,9 @@ package org.kimbs.design.behavioral.state;
 
 public class Template {
 
-    public enum Status {
-        REG, REQ, APR, REJ
-    }
-
     private String name;
     private String contents;
     private String code;
-    private TemplateStatus templateStatus = new RegisteredStatus(this);
     private Status status = Status.REG;
     // etc..
 
@@ -25,14 +20,6 @@ public class Template {
         return code;
     }
 
-    public TemplateStatus getTemplateStatus() {
-        return templateStatus;
-    }
-
-    public void setTemplateStatus(TemplateStatus templateStatus) {
-        this.templateStatus = templateStatus;
-    }
-
     public Status getStatus() {
         return status;
     }
@@ -45,5 +32,15 @@ public class Template {
         this.name = name;
         this.contents = contents;
         this.code = code;
+    }
+
+    @Override
+    public String toString() {
+        return "Template{" +
+                "name='" + name + '\'' +
+                ", contents='" + contents + '\'' +
+                ", code='" + code + '\'' +
+                ", status=" + status +
+                '}';
     }
 }
