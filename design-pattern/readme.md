@@ -25,5 +25,5 @@
 |           | Observer (옵저버)                   |[옵저버 패턴 얘제](src/main/java/org/kimbs/design/behavioral/observer)|
 |           | Mediator (중재자)                   |                                                            |
 |           | Memento (메멘토)                    |                                                            |
-|           | State (상태)                        |                                                            |
+|           | State (상태)                        |[상태 패턴 예제](src/main/java/org/kimbs/design/behavioral/state)                                                            |
 |           | Visitor (비지터)                    |                                                            |
