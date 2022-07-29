@@ -45,7 +45,7 @@
 - 분산 작업을 제어하기 위한 Tree 형태의 저장소
 - Leader, Follower로 구성
 
-### Recode(Message) 구조
+### Record(Message) 구조
 - Header(topic, partition, timestamp, etc) metadata
 - Key, Value (body)
 - serializer ← byte array → deserializer
