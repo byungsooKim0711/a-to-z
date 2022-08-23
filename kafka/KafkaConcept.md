@@ -16,6 +16,12 @@
 - partition을 복제하여 다른 broker상에서 replicas(복제본)를 만들어 장애를 미리 대비한다.
 - topic 생성 시 혹은 broker 에서 설정 가능하다.
   - replication factor.
+#### ISR(In-Sync Replicas)
+- leader에 장애가 났을 때 ISR 중에 새로운 leader를 선출한다.
+- replica.lag.max.message
+- replica.lag.time.max.ms
+  - follower가 leader로 fetch 요청을 보내는 interval 체크
+  - ex) replica.lag.time.max.ms=5000 일 경우 follower가 leader로 featch 요청을 5000ms 내에만 요청을 하면 된다.
 ### Producer
 - 메시지를 생산(produce)해서 topic으로 메시지를 보내는 애플리케이션
   - Leader에만 write.
