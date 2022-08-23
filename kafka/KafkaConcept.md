@@ -4,6 +4,8 @@
 - kafka 안에서 메시지가 저장되는 논리적인 장소
 #### Partition
 - 모든 topic은 1개 이상의 partition으로 구성된다.
+- 초당 메시지 발행 수 / consumer thread 1개가 1초당 처리하는 메시지 수
+  - (1000/100 = 10개의 파티션 필요함)
 #### Segment
 - 메시지가 저장되는 실제 물리적인 file로 segment file이 지정된 크기보다 크거나 지정된 기간보다 오래되면 새 파일이 열리고 메시지는 새 파일에 추가된다.
 - log.segment.bytes(default: 1GB)
