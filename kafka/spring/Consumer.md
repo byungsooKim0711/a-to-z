@@ -22,12 +22,19 @@
 ### 2. @KafkaListener
 - clientIdPrefix, autoStartup, concurrency, topicPartitions 등 쉽게 설정 가능
 - 메타데이터
-  - offset, recevied_message_key, received_topic, received_partition_id, received_timestamp, timestamp_type
+  - offset, recevied_message_key, received_topic, received_partition_id, received_timestamp, timestamp_type, ...
+- 메타데이터 얻어오는 방법
+  - @Header annotation
+  - ConsumerRecordMetadata class
+  - 
 ### 3. Payload Validator
 - 2.2 이후부터 쉽게 설정 가능
-- KafkaListenerEndpointRegistrar 에 등록하여 사용가능
+- KafkaListenerConfigurer 인터페이스 구현
+  - KafkaListenerEndpointRegistrar 에 등록하여 사용가능 
+  - KafkaListener 에서는 @Valid annotation 추가
+    - 해당 에러에대한 핸들링은 어떻게 하는가?
 - LocalValidatorFactoryBean을 이용하면 javax.validation(JSR-303)에 정의된 @NotEmpty, @Min ... 등을 사용하여 유효성 체크가 가능하다.
-### 4.  Retrying Deliveries
+### 4. Retrying Deliveries
 - 기본적으로 리스너에서 에러가 발생되면 Container Error Handler가 동작한다.
 - RetryingMessageListenerAdapter를 통해 Retry 기능을 호출한다.
 - RetryTemplate과 RecoveryCallback을 ContainerFactory에 설정하여 사용한다.
@@ -47,4 +54,5 @@
 | COUNT_TIME       | COUNT, TIME 중 맞는 조건이 나오면 커밋                       |
 | MANUAL           | Acknowledgement.acknowledge() 가 호출되면 다음번 poll() 메서드 호출 시 커밋 |
 | MANUAL_IMMEDIATE | Acknowledgement.acknowledge() 가 호출되면 커밋               |
+
 
