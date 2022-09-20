@@ -9,6 +9,6 @@
 | Redis          | [레디스 공부](redis)                        |      |
 | Junit          | [JUnit 공부](junit)                         |      |
 | Git            | [Git & GitHub 공부](git)                    |      |
-| Jenkins        | [젠킨스 공부](jenkins)                      |      |
+| Jenkins        | [젠킨스 공부](ci-cd/jenkins)                      |      |
 | Java           | [Java](java)<br />[VisualVM](java/visualvm) |      |
 
