@@ -111,3 +111,60 @@ ex) docker exec -it 202ceec2f709 /bin/bash
 - Build periodically -> cron job
 - Poll SCM -> cron job
 
+
+
+---
+
+## 부록
+
+### 리눅스 서버 설치 (docker, 강의 제공 이미지 기준)
+
+- 리눅스 서버 이미지 다운로드
+
+```shell
+docker pull edowon0623/docker
+```
+
+
+
+- 리눅스 서버 이미지 실행
+
+```shell
+docker run --privileged --name docker-server -itd -p 10022:22 -p 18081:8888 -e container=docker -v /sys/fs/cgroup:/sys/fs/cgroup edowon0623/docker:latest /usr/sbin/init
+```
+
+
+
+- 
+
+
+
+
+
+Dockerfile 내용
+
+```shell
+# 베이스 이미지 openjdk17
+FROM openjdk:17 AS builder
+
+COPY ./cicd-0.0.1-SNAPSHOT.jar cicd.jar
+
+# 8080 컨테이너 포트 노출
+EXPOSE 8888
+
+# jar 파일 실행
+ENTRYPOINT ["java","-jar","cicd.jar"]
+```
+
+
+
+이미지 빌드? -> docker build -d -t cicd-test-server:0.1 -f Dockerfile .
+
+- -d: 백그라운드
+- -t: 태그명 
+- -f: dockerfile의 이름 지정 (default: Dockerfile)
+- .: 현재경로에서 찾음
+
+
+
+위에서 빌드한 이미지 실행 -> docker run -p 8888:8888 --name my-cicd-app cicd-test-server:0.1
