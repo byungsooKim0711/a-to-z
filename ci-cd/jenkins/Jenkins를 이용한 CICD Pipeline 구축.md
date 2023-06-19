@@ -1,3 +1,9 @@
+[toc]
+
+
+
+
+
 # Jenkins를 이용한 CI/CD Pipeline 구축
 
 ## Docker Desktop 설치
@@ -10,10 +16,10 @@
 
 - docker pull ${계정/레포지토리:태그}
   ex) docker pull jenkins/jenkins:lts-jdk11
-
 - docker run ...
 - docker start ${container_id|container_name}
 - docker stop ${container_id|container_name}
+- docker network inspect bridge
 
 
 
@@ -135,13 +141,7 @@ docker run --privileged --name docker-server -itd -p 10022:22 -p 18081:8888 -e c
 
 
 
-- 
-
-
-
-
-
-Dockerfile 내용
+- Dockerfile 내용
 
 ```shell
 # 베이스 이미지 openjdk17
@@ -158,13 +158,166 @@ ENTRYPOINT ["java","-jar","cicd.jar"]
 
 
 
-이미지 빌드? -> docker build -d -t cicd-test-server:0.1 -f Dockerfile .
+- 이미지 빌드 
+```shell
+docker build -d -t cicd-test-server:0.1 -f Dockerfile .
+```
 
 - -d: 백그라운드
 - -t: 태그명 
 - -f: dockerfile의 이름 지정 (default: Dockerfile)
 - .: 현재경로에서 찾음
 
+- 위 이미지 실행
+```shell
+docker run -p 8888:8888 --name my-cicd-app cicd-test-server:0.1
+```
 
 
-위에서 빌드한 이미지 실행 -> docker run -p 8888:8888 --name my-cicd-app cicd-test-server:0.1
+## Infrastructure as Code (IaC)
+
+> 시스템, 하드웨어 또는 인터페이스의 구성정보를 스크립트를 통해 관리 및 프로비저닝, 리소스 관리, 버전관리를 가능하도록 함
+
+### Ansible
+
+#### 개요
+
+- 여러 개의 서버를 효율적으로 관리할 수 있는 환경 구성 자동화 도구
+
+#### 설치
+
+- docker 이미지 다운로드 (강의 제공 이미지 기준)
+
+```shell
+docker pull edowon0623/ansible
+```
+
+- ansible 서버 실행
+
+```shell
+docker run --privileged --name ansible-server -itd -p 20022:22 -p 8081:8080 -e container=docker -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host edowon0623/ansible /usr/sbin/init
+```
+
+
+
+`@ 다운받은 서버에서 docker 실행이 안될 때!!!!`
+
+- /etc/docker/daemon.json 파일 추가
+
+```json
+{
+    "iptables": false
+}
+```
+
+
+
+
+
+- docker 네트워크 정보 확인
+  - docker network inspect bridge
+
+jenkins: 172.17.0.3
+ansible: 172.17.0.2
+docker-server: 172.17.0.4
+
+
+
+- ansible이 클라이언트로 관리하는 대상은 아래 파일에서 관리함
+
+  - /etc/ansible/hosts
+  - [그룹명] 여러개 가능
+
+  ```shell
+  [devops]
+  172.17.0.2
+  172.17.0.4
+  ```
+
+- ansible 서버 → 클라이언트 접속 시 id/password 방식이 아닌 key 활용
+
+  - ansible 서버에서 ssh-keygen 으로 키생성
+  - 각 클라이언트 서버에 ssh-copy-id root@서버IP 키복사
+  - 이후 ansible 에서 클라이언트로 ssh 접속시 패스워드 필요없음
+
+
+
+#### 명령어
+
+- ansible 에서 사용할 수 있는 명령어 모듈들은 https://docs.ansible.com/ansible/2.9/modules/list_of_all_modules.html 여기서 확인 가능
+- ansible [groupname] -m [module]
+  - ex1) ansible all -m ping (모든 그룹에 ping 모듈 실행)
+  - ex2) ansible devops -m ping (devops 그룹에 ping 모듈 실행)
+  - ex3) ansible all -m shell -a "free -h" (모든 그룹에 shell 명령어 실행, -a 옵션으로 파라미터 전달)
+  - ex4)  ansible all -m copy -a "src=./test.txt dest=/tmp" (모든 그룹에 ./test.txt 파일을 /tmp 경로로 복사)
+  - ex5) ansible all -m yum -a "name=httpd state=present" (모들 그룹에 yum 명령어 실행, -a 옵션으로 파라미터 전달)
+
+
+
+####  Playbook
+
+- 사용자가 원하는 내용을 미리 작성해 놓은 스크립트 파일(.yaml | .yml)
+- 실행 명령어 → ansible-playbook [파일명] 
+- hosts 파일은 기본적으로 /etc/ansible/hosts 파일을 참조
+  - playbook 실행 시 host 파일 지정 방법
+  - ansible-playbook [-i 지정할 hosts 파일경로] [playbook 파일명]
+
+ex1)
+
+```yaml
+---
+- name: Add an ansible hosts test # palybook 이름
+  hosts: localhost                # group 이름 | host 이름?
+  tasks:                          # 작업 목록
+    - name: Add an ansible hosts  # 첫번째 작업 이름
+      blockinfile:                # 첫번째 작업 모듈 
+        path: /etc/ansible/hosts  # 파라미터
+        block: |                  # 파라미터 (block은 파이프로 시작해야함?)
+          [test-group]
+          172.17.0.5
+```
+
+
+
+ex2)
+
+```yaml
+---
+- name: Ansible copy example local to remote
+  hosts: devops
+  tasks:
+    - name: Create a directory /tmp/playbook_test
+      file:
+        path: /tmp/playbook_test
+        state: directory
+        mode: 0755
+    - name: Copying file with playbook
+      copy:
+        src: ~/test.txt
+        dest: /tmp/playbook_test
+        owner: root
+        mode: 0644
+```
+
+
+
+### Jenkins + Ansible 연동
+
+
+
+
+
+
+
+
+
+### Ansible을 이용한 Docker 이미지 관리
+
+### Ansible playbook으로 Docker 컨테이너 생성
+
+
+
+
+
+
+
