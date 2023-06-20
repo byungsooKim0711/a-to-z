@@ -20,6 +20,11 @@
 - docker start ${container_id|container_name}
 - docker stop ${container_id|container_name}
 - docker network inspect bridge
+- docker rm ${container_id/container_name}
+- docker rmi ${image_id|repository:tag}
+- docker login
+  - /root/.docker/config.json 경로에 username:password가 base64로 인코딩됨 ...
+- docker logout
 
 
 
@@ -303,21 +308,202 @@ ex2)
 
 ### Jenkins + Ansible 연동
 
+#### Ansible 서버정보 등록
+
+1. Dashboard → Jenkins 관리 → System Configuration(System) →  SSH Server 추가
+
+   1. name, hostname, username, remote directory, port, password 등
+
+2. Item → 설정 → 빌드 후 조치 → Send build artifacts over SSH
+
+   1. 위에서 등록한 ansible 서버 선택
+
+   2. Transfer Set
+
+      1. Source files 
+
+         ```shell
+         build/libs/*.jar
+         ```
+
+      2. Remove prefix
+
+         ```shell
+         build/libs
+         ```
+
+      3. Remote directory
+
+         ```sh
+         ./test
+         ```
+
+      4. Exec command
+
+         ```shell
+         cd ./test
+         ansible-playbook -i hosts test-cicd-app-playbook.yaml
+         ```
 
 
 
+#### Ansible을 이용한 Docker 이미지 관리 및 생성
+
+> **작업(task) 순서**
+>
+> 1. 실행중인 컨테이너를 중지
+> 2. 등록된 컨테이너 삭제
+> 3. 등록된 이미지 삭제
+> 4. 이미지 빌드
+> 5. 이미지 실행
+
+`test-cicd-app-playbook.yaml`
+
+```yaml
+- hosts: devops
+  tasks:
+    ## 1. 실행중인 컨테이너 중지
+    - name: "#1. Stop crruent running container with ignore error."
+      command: docker stop app-cicd-test
+      ignore_errors: yes
+      
+    ## 2. 등록된 컨테이너 삭제
+    - name: "#2. Remove stopped container with ignore error."
+      command: docker rm app-cicd-test
+      ignore_errors: yes
+    
+    ## 3. 등록된 이미지 삭제
+    - name: "#3. Remove current docker image with ignore error."
+      command:  rmi cicd-ansible-test:0.1
+      ignore_errors: yes
+    
+    ## 4. 신규로 이미지 빌드
+    - name: "#4. Build a docker image with deployd jar file."
+      command: docker build -t cicd-ansible-test:0.1 -f Dockerfile .
+      args:
+        chdir: /root/test
+        
+    ## 5. 신규 이미지 실행
+    - name: "#5. Create a container using cicd-ansible-test image."
+      command: docker run -d --name app-cicd-test -p 8080:8888 cicd-ansible-test:0.1
+```
 
 
 
-
-
-### Ansible을 이용한 Docker 이미지 관리
-
-### Ansible playbook으로 Docker 컨테이너 생성
-
+- 위의 이미지를 docker hub에 push를 진행하려고 한다.
+  - 2개 이사의 서버에서 푸시를 다 할 필요없이 1번만 하면 된다.
+  - ansible-playbook 실행 시 --limit 옵션을 주어 특정 서버에서만 작업하도록 지정할 수 있다.
 
 
 
+- 기존의 계정명이 붙지 않는 repository 정보를 tag 옵션을 통하여 업데이트
+
+```sh
+[root@4c8298e997a0]# docker images
+REPOSITORY          TAG       IMAGE ID       CREATED              SIZE
+cicd-ansible-test   0.1       81dc95bbc0d0   About a minute ago   518MB
+```
 
 
 
+- 위 내용을 tag 옵션을 통해 변경
+
+```sh
+[root@4c8298e997a0]# docker tag cicd-ansible-test:0.1 byngsk/cicd-ansible-test:0.1
+[root@4c8298e997a0]# docker images
+REPOSITORY                 TAG       IMAGE ID       CREATED              SIZE
+byngsk/cicd-ansible-test   0.1       81dc95bbc0d0   About a minute ago   518MB
+cicd-ansible-test          0.1       81dc95bbc0d0   About a minute ago   518MB
+```
+
+
+
+- 아래 명령어를 통하여 docker hub 사이트에 업로드
+
+```sh
+[root@4c8298e997a0]# docker push byngsk/cicd-ansible-test:0.1
+The push refers to repository [docker.io/byngsk/cicd-ansible-test]
+4004b01857b8: Pushed
+dc9fa3d8b576: Mounted from library/openjdk
+27ee19dc88f2: Mounted from library/openjdk
+c8dd97366670: Mounted from library/openjdk
+0.1: digest: sha256:e0324837c51722730fbf4ca17e4b2cbef849cf2efc5adf9c85c048bb1ef9a196 size: 1166
+```
+
+
+
+- push된 이미지 정보는 https://hub.docker.com/repository/docker/byngsk/cicd-ansible-test/general 에서 확인
+
+
+
+- docker build/push와 pull/run 분리
+
+`#1. create-cicd-devops-image.yaml (build & push)`
+
+```yaml
+- hosts: devops
+  tasks:
+    #1. 도커 빌드
+    - name: Create a docker image with deployed jar file
+      command: docker build -t byngsk/cicd-ansible-test:0.1 -f Dockerfile .
+      args:
+        chdir: /root/test
+
+    #2. 푸시
+    - name: Push the image on docker-hub
+      command: docker push byngsk/cicd-ansible-test:0.1
+
+    #3. 로컬에서 삭제
+    - name: Remove the docker image from the ansible server
+      command: docker rmi byngsk/cicd-ansible-test:0.1
+      ignore_errors: yes
+```
+
+`#2. create-cicd-devops-container.yaml (pull & run) `
+
+```yaml
+- hosts: devops
+  tasks:
+    ## 1. 실행중인 컨테이너 중지
+    - name: "#1. Stop crruent running container with ignore error."
+      command: docker stop app-cicd-test
+      ignore_errors: yes
+
+    ## 2. 등록된 컨테이너 삭제
+    - name: "#2. Remove stopped container with ignore error."
+      command: docker rm app-cicd-test
+      ignore_errors: yes
+
+    ## 3. 등록된 이미지 삭제
+    - name: "#3. Remove current docker image with ignore error."
+      command: rmi byngsk/cicd-ansible-test:0.1
+      ignore_errors: yes
+
+    ## 4. 허브사이트에서 이미지 땡겨오기
+    - name: "#4. Pull the newest docker image from docker hub."
+      command: docker pull byngsk/cicd-ansible-test:0.1
+
+    ## 5. 이미지 실행
+    - name: "#5. Create a container using cicd-ansible-test image."
+      command: docker run -d --name app-cicd-test -p 8080:8888 byngsk/cicd-ansible-test:0.1
+```
+
+ `#3. jenkins 설정 변경`
+
+- Dashboard → Item → Configuration → Send build artifacts over SSH → Exec command
+
+```sh
+cd ./test
+
+ansible-playbook -i hosts create-cicd-devops-image.yaml --limit 172.17.0.3;
+ansible-playbook -i hosts create-cicd-devops-container.yaml;
+```
+
+- Build & Push는 ansible 서버에서 진행
+- Pull & Run은 hosts에 등록된 그룹 전부 진행
+
+
+
+## Jenkins + Ansible + K8S
+
+// todo:
