@@ -141,7 +141,7 @@ docker pull edowon0623/docker
 - 리눅스 서버 이미지 실행
 
 ```shell
-docker run --privileged --name docker-server -itd -p 10022:22 -p 18081:8888 -e container=docker -v /sys/fs/cgroup:/sys/fs/cgroup edowon0623/docker:latest /usr/sbin/init
+docker run --privileged --name docker-server -itd -p 10022:22 -p 18081:8080 -e container=docker -v /sys/fs/cgroup:/sys/fs/cgroup edowon0623/docker:latest /usr/sbin/init
 ```
 
 
@@ -155,7 +155,7 @@ FROM openjdk:17 AS builder
 COPY ./cicd-0.0.1-SNAPSHOT.jar cicd.jar
 
 # 8080 컨테이너 포트 노출
-EXPOSE 8888
+EXPOSE 8080
 
 # jar 파일 실행
 ENTRYPOINT ["java","-jar","cicd.jar"]
@@ -476,7 +476,7 @@ c8dd97366670: Mounted from library/openjdk
 
     ## 3. 등록된 이미지 삭제
     - name: "#3. Remove current docker image with ignore error."
-      command: rmi byngsk/cicd-ansible-test:0.1
+      command: docker rmi byngsk/cicd-ansible-test:0.1
       ignore_errors: yes
 
     ## 4. 허브사이트에서 이미지 땡겨오기
@@ -506,4 +506,4 @@ ansible-playbook -i hosts create-cicd-devops-container.yaml;
 
 ## Jenkins + Ansible + K8S
 
-// todo:
+> 컨테이너화된 애플리케이션을 관리하기 위한 오픈 소스
