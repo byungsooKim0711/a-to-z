@@ -507,3 +507,122 @@ ansible-playbook -i hosts create-cicd-devops-container.yaml;
 ## Jenkins + Ansible + K8S
 
 > 컨테이너화된 애플리케이션을 관리하기 위한 오픈 소스
+
+### 설치오류
+
+- Windows11 환경에서 Docker desktop에 kubenetes가 활성화되지 않을 때 참고
+
+  ```
+  https://www.c-sharpcorner.com/article/how-to-install-docker-desktop-and-troubleshoot-issues-in-windows-machine/#:~:text=Go%20to%20Docker%20and%20check,click%20and%20click%20on%20Start.&text=Another%20step%20is%20to%20verify,Hyper%2DV%20and%20containers
+  ```
+
+  
+
+### 간단 명령어
+
+#### Command Line
+
+| 명령어                                                       | 설명                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| kubectl get nodes                                            | 노드 확인                                                    |
+| kubectl get pods                                             | 파드 확인                                                    |
+| kubectl get deployments                                      | 디플로이먼트 확인                                            |
+| kubectl get services                                         | 서비스 확인                                                  |
+| kubectl run sample-nginx --image=nginx --port=80             | nginx 이미지를 80포트로 실행                                 |
+| kubectl describe pods sample-nginx                           | sample-nginx 파드의 상세정보 확인                            |
+| kubectl delete pod/sample-nginx                              | sample-nginx 파드 삭제                                       |
+| kubectl create deployment sample-nginx --image=nginx         | nignx 이미지를 디플로이먼트로 감싸서 배포?<br />deployment로 파드를 생성하면, deployment에서 유지하려고 하는 최소한의 파드 개수를 유지해준다. |
+| kubectl scale deployment sample-nginx --replicas=2           | sample-nginx에서 유지하려고하는 파드 개수를 2개로 설정       |
+| kubectl exec -it nginx-deployment-7fb96c846b-7f4z4 -- /bin/bash | Pod 터미널 접속                                              |
+| kubectl expose deployment nginx-deployment --port=80 --type=NodePort | 80포트, 각노드에 포워딩 건 상태로 쓸 수 있도록 외부 노출,<br />kubectl get services 에서 확인 가능 |
+
+
+
+#### Script (.yaml)
+
+```sh
+kubectl apply -f ${file_name}
+ex) kubectl apply -f sample.yaml
+```
+
+**yaml 기본 포멧**
+
+- sample.yaml
+
+```yaml
+## 
+apiVersion: apps/v1
+## 쿠버네티스 오브젝트 이름 (Deployment, Pod, Service, ReplicaSet)
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  lables:
+    app: nginx
+## kind 종류에 따라 옵션들이 달라짐
+spec:
+  replicas: 3
+  selector:
+    matchLables:
+      app: nginx
+  ## 설치하고자 하는 pod의 내용 작성
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25.1
+        ports:
+          - containerPort: 80
+```
+
+
+
+**k8s-devops-deployment.yaml**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cicd-deployment
+spec:
+  selector:
+    matchLabels:
+      app: cicd-devops-project
+  replicas: 2
+
+  template:
+    metadata:
+      labels:
+        app: cicd-devops-project
+    spec:
+      containers:
+      - name: cicd-devops-project
+        image: byngsk/cicd-ansible-test:0.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+```
+
+
+
+**k8s-devops-service.yaml**
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: cicd-service
+  labels:
+    app: cicd-devops-project
+spec:
+  selector:
+    app: cicd-devops-project
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8888
+      nodePort: 32000
+```
+
