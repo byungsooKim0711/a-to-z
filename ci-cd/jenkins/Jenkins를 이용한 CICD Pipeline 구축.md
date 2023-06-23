@@ -626,3 +626,30 @@ spec:
       nodePort: 32000
 ```
 
+### Kubernetes + Ansible
+
+#### Ansible-server → Windows PC로 SSH가 안 될 경우 
+
+- #1 윈도우 → 선택적 기능 → Open SSH 서버/클라인트 설치여부 확인하여 설치
+- #2. OpenSSH Server 실행
+  - #2-1 Windows PowerShell(관리자모드): `Start-Service sshd` 로 openssh server 실행
+  - #2-2 또는, 서비스 실행 → OpenSSH SSH Server 실행
+- #3. Windows PwoerShell 에서 `Get-NetFirewallRule -Name OpenSSH-Server-In-TCP` 를 검색하여  Enable 속성이 True인지 확인
+
+
+
+#### 현재 문제사항
+
+- Ansible-server Windows PC로 SSH는 되나 ansible 모듈 실행시 아래와 같이 오류 발생
+
+```sh
+[root@4c8298e997a0 ~]# ansible -i k8s/hosts kubernetes -m ping -u vlakd
+[WARNING]: Invalid characters were found in group names but not replaced, use -vvvv to see details
+172.27.0.1 | UNREACHABLE! => {
+    "changed": false,
+    "msg": "Failed to connect to the host via ssh: vlakd@172.27.0.1: Permission denied (publickey,password,keyboard-interactive).",
+    "unreachable": true
+}
+[root@4c8298e997a0 ~]#
+```
+
