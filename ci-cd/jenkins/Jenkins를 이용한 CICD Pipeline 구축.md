@@ -653,3 +653,164 @@ spec:
 [root@4c8298e997a0 ~]#
 ```
 
+- -k 옵션으로 패스워드 직접입력 시 sshpass 를 설치하라는 메시지 출력
+  - #1. wget 없어서 설치
+  - #2. wget 명력어로 sshpass 설치
+
+```sh
+yum install wget
+
+wget https://cbs.centos.org/kojifiles/packages/sshpass/1.06/8.el8/x86_64/sshpass-1.06-8.el8.x86_64.rpm 
+
+dnf install -y ./sshpass-1.06-8.el8.x86_64.rpm
+```
+
+
+
+- hosts 파일 수정
+  - [kubernetes:vars] 의 내용 추가
+  - ~~ansible_remote_tmp: C:/tmp에 권한이 없다고 해서 로그인하는 계정의 경로 지정~~
+  - ~~ansible_python_interpreter: /usr/bin/python 못찾는다고 해서 ansible-server에 설치된 파이썬 경로 지정~~
+  - ansible_shell_type: host pc가 윈도우인 경우 powershell로 설정했었으나 오류가 있는경우 cmd로 변경
+  - 
+
+```sh
+[ansible_server]
+localhost
+
+[docker_server]
+172.17.0.4
+
+[kubernetes]
+172.22.128.1
+
+[kubernetes:vars]
+ansible_user=${username}
+ansible_password=${password}
+ansible_conntection=winrm
+ansible_winrm_server_cert_validation=ignore
+#ansible_remote_tmp=C:/Users/vlakd/tmp
+#become_method=runas
+ansible_shell_type=cmd
+#ansible_python_interpreter=/usr/bin/python3
+```
+
+- 이후 오류
+  - 깨진 글씨는 인코딩 해서 출력 못하나...
+
+```sh
+172.22.128.1 | FAILED! => {
+    "changed": false,
+    "module_stderr": "�Ű� ���� ������ Ʋ���ϴ� - ;\r\n",
+    "module_stdout": "",
+    "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error",
+    "rc": 1
+}
+```
+
+- ansible_shell_type: powershell → cmd 변경 이후
+  - 추가) windows host는 win_ping 모듈을 실행해야함...
+
+```sh
+[root@4c8298e997a0 k8s]$ ansible -i hosts kubernetes -m win_ping
+172.22.128.1 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+
+
+#### Ansible + K8S
+
+**k8s deployment 등록**
+
+- `172.17.0.3(ansible-server) → k8s-cicd-deployment-playbook.yaml`
+
+  - host pc가 windows인 경우 command 대신 win_command 명령어를 사용해야한다.
+
+  ```yaml
+  - name: Create pods using deployment
+    hosts: kubernetes
+    tasks:
+    - name: delete the previous deployment
+      win_command: kubectl delete deployment.apps/cicd-deployment
+      ignore_errors: yes
+  
+    - name: create a deployment
+      win_command: kubectl apply -f cicd-devops-deployment.yaml
+  ```
+
+- `host pc(kubernetes 가 설치된) → cicd-devops-deployment.yaml`
+
+  ```yaml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: cicd-deployment
+  spec:
+    selector:
+      matchLabels:
+        app: cicd-devops-project
+    replicas: 2
+  
+    template:
+      metadata:
+        labels:
+          app: cicd-devops-project
+      spec:
+        containers:
+        - name: cicd-devops-project
+          image: byngsk/cicd-ansible-test:0.1
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8080
+  ```
+
+- ansible-server 에서 `ansible-playbook -i hosts k8s-cicd-deployment-playbook.yaml` 명령어 실행
+- k8s 가 설치되어있는 host pc 에서 `kubectl get deployments`로 등록이 되어있는지 확인
+
+
+
+**k8s service 등록**
+
+- `172.17.0.3(ansible-server) → k8s-cicd-service-playbook.yaml`
+
+  ```yaml
+  - name: create service for deployment
+    hosts: kubernetes
+    tasks:
+    - name: create a service
+      win_command: kubectl apply -f cicd-devops-service.yaml
+  ```
+
+  
+
+- `host pc(kubernetes가 설치된) → cicd-devops-service.yaml`
+
+  ```yaml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: cicd-service
+    labels:
+      app: cicd-devops-project
+  spec:
+    selector:
+      app: cicd-devops-project
+    type: NodePort
+    ports:
+      - port: 8888
+        targetPort: 8888
+        nodePort: 32000
+  ```
+
+  - ansible-server에서 `ansible-playbook -i hosts k8s-cicd-service-playbook.yaml` 명령어 실행
+  - k8s 가 설치되어있는 host pc 에서 `kubectl get services`로 등록이 되어있는지 확인
+    - 브라우저에서 localhost:32000/owner 를 접속하여 api 호출여부 확인
+
+
+
+#### Jenkins + Ansible + K8S
+
+// todo: Jenkins > ansible > k8s
