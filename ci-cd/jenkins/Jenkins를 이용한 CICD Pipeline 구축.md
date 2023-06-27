@@ -813,4 +813,30 @@ ansible_shell_type=cmd
 
 #### Jenkins + Ansible + K8S
 
-// todo: Jenkins > ansible > k8s
+- 수동으로 했던 내용들을 Jenkins의 빌드 후 조치 → Send build artifacts over SSH → Exec command 에 입력
+
+  ```shell
+  ansible-playbook -i hosts k8s-cicd-deployment-playbook.yaml;
+  ansible-playbook -i hosts k8s-cicd-service-playbook.yaml
+  ```
+
+  - Build Suceess 확인
+  - kubectl get pods, kubectl get deployments, kubectl get services 명령어 및 브라우저에서 API 호출여부 확인
+
+
+
+**CI(Continuous Integration) Jobs**
+
+- Git Pull
+- Create a docker image
+- Push the image to the docker-hub
+- Remove the image from the local
+
+
+
+
+
+**CD(Confinuous Deployment) Jobs**
+
+- Create a deployment
+- Create a service
