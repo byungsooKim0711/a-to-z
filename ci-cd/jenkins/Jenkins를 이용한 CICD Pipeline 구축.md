@@ -840,3 +840,169 @@ ansible_shell_type=cmd
 
 - Create a deployment
 - Create a service
+
+
+
+
+
+## Jenkins CI / CD 분리
+
+> CI 프로젝트가 성공하면 빌드 후 조치에서 CD 프로젝트를 실행하도록 한다. (이렇게 하는 이유는?)
+
+
+
+- **K8S-CI** 프로젝트 생성
+
+  - 빌드 후 조치
+
+    - #1. Send build artifacts over SSH
+      - --limit 옵션에 ip address를 입력하거나, hosts 파일에 있는 그룹명을 입력 할 수 있다.
+
+    ```sh
+    ansible-playbook -i hosts create-cicd-devops-image.yaml --limit ansible_server
+    ```
+
+    - #2. Build other projects
+      - K8S-CD 프로젝트 입력
+
+    
+
+    - #. create-cicd-devops-image.yaml 파일
+
+    ```yaml
+    - hosts: ansible_server
+      tasks:
+        #1. 도커 빌드
+        - name: Create a docker image with deployed jar file
+          command: docker build -t byngsk/cicd-ansible-test:0.1 -f Dockerfile .
+          args:
+            chdir: /root/k8s
+    
+        #2. 푸시
+        - name: Push the image on docker-hub
+          command: docker push byngsk/cicd-ansible-test:0.1
+    
+        #3. 로컬에서 삭제
+        - name: Remove the docker image from the ansible server
+          command: docker rmi byngsk/cicd-ansible-test:0.1
+          ignore_errors: yes
+    ```
+
+    - #. hosts 파일
+
+    ```sh
+    [ansible_server]
+    172.17.0.3
+    
+    [docker_server]
+    172.17.0.4
+    
+    [kubernetes]
+    172.22.128.1
+    
+    [kubernetes:vars]
+    ansible_user=${username}
+    ansible_password=${password}
+    ansible_conntection=winrm
+    ansible_winrm_server_cert_validation=ignore
+    ansible_shell_type=cmd
+    ```
+
+    
+
+- **K8S-CD** 프로젝트 생성
+
+  - 빌드 후 조치
+
+    - #1. Send build artifacts over SSH 
+
+    ```sh
+    ansible-playbook -i hosts k8s-cicd-deployment-playbook.yaml;
+    ansible-playbook -i hosts k8s-cicd-service-playbook.yaml
+    ```
+
+    - #. k8s-cicd-deployment-playbook.yaml
+
+    ```yaml
+    - name: Create pods using deployment
+      hosts: kubernetes
+    
+      tasks:
+      - name: delete the previous deployment
+        win_command: kubectl delete deployment.apps/cicd-deployment
+        ignore_errors: yes
+    
+      - name: create a deployment
+        win_command: kubectl apply -f cicd-devops-deployment.yaml
+    ```
+
+    
+
+    - #. k8s-cicd-service-playbook.yaml
+
+    ```yaml
+    - name: create service for deployment
+      hosts: kubernetes
+    
+      tasks:
+      - name: create a service
+        win_command: kubectl apply -f cicd-devops-service.yaml
+    ```
+
+
+
+## Jenkins Pipeline
+
+### 플러그인 설치
+
+- Delivery pipeline
+  - 프로젝트간 파이프라인 설정이 어떻게 되어있는지 시각화 해주는 플러그인
+
+
+
+### Pipeline 스크립트
+
+#### 기본 문법
+
+```groovy
+pipeline {
+    agent any // 젠킨스 노드
+    stages {
+        stage('${단계명}') {
+            steps {
+                // 스테이지에서 진행하려고 하는 작업을 기술
+                echo "Test step!";
+            }
+        }
+
+        stage('') {
+            steps {
+                echo "";
+            }
+        }
+    }
+    
+    // 위 파이프라인이 전부 끝난 이후에 진행할 과정에 대해서 추가작업 가능
+    post {
+        always {
+            echo ""
+        }
+        success {
+            echo ""
+        }
+        failure {
+            echo ""
+        }
+        unstable {
+            echo ""
+        }
+        changed {
+            echo ""
+        }
+    }
+}
+```
+
+
+
+// TODO:
