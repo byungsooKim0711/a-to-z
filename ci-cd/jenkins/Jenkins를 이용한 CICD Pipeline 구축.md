@@ -962,6 +962,10 @@ ansible_shell_type=cmd
 
 ### Pipeline 스크립트
 
+- Item 생성 시, pipeline 프로젝트를 선택한다.
+
+
+
 #### 기본 문법
 
 ```groovy
@@ -1003,6 +1007,111 @@ pipeline {
 }
 ```
 
+#### 예시-#1
+
+- Git clone → Gradle build
+
+```groovy
+pipeline {
+    agent any
+    tools {
+        gradle 'gradle-7.6.1'
+        jdk 'jdk-17'
+    }
+    stages {
+        stage('Github clone') {
+            steps {
+                git branch: 'master', url: 'https://github.com/byungsooKim0711/cicd-test'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh '''
+                	echo build start
+                	gradle clean build
+                '''
+            }
+        }
+    }
+}
+```
+
+- 기본문법 안에 들어가는 steps 내용들은, `https://www.jenkins.io/doc/book/pipeline/syntax/` 또는 설치된 jenkins 서버에서 pipeline 프로젝트 구성시 보이는 Pipeline syntax 링크에서 자동완성 기능을 통하여 사용가능하다.
 
 
-// TODO:
+
+## Jenkins + SonarQube
+
+> **SonarQube** 코드 품질 개선을 위한 정적분석 도구
+>
+> - Continuos Integration + Analysis
+> - 이슈, 결함, 복잡성, 취약성, 등의 정보를 확인하여 리포팅
+
+
+
+### SonarQube 세팅
+
+#### Docker Image 다운로드
+
+```sh
+docker pull sonarqube
+
+docker run -d --rm -p 9000:9000 --name sonarqube sonarqube
+```
+
+- 초기 로그인 계정은 admin/admin
+
+
+
+#### Gradle 프로젝트에 sonarqube 플러그인 추가
+
+```groovy
+plugins {
+    // ... 생략 ...
+
+    // sonarqube plugin
+    id "org.sonarqube" version "4.2.1.3168"
+    
+    // ... 생략 ...
+}
+```
+
+
+
+#### SonarQube build
+
+> ./gradlew sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=squ_076a404bb91a114a83ec103707d46405bf996041
+
+- sonar.host.url
+  - 소나큐브가 설치된 서버의 정보, http://localhost:9000
+- sonar.token
+  - 소나큐브 계정의 토큰정보
+  - SonarQube 웹 → My Accound → Security → Generate Tokens
+    - name: 
+    - type: User Token
+    - expires in: 
+
+
+
+#### Jenkins SonarQube 세팅
+
+**플러그인 설치**
+
+- Jenkins Web → Dashboard → Jenkins 관리 → Plugins → SonarQube Scanner 설치
+
+**소나큐브 토큰 관리**
+
+- Jenkins Web → Dashboard → Jenkins 관리 → Security → Add credential
+  - Kind: Secret text
+  - Scope:
+  - Secret: 소나큐브 토큰값 입력
+
+**소나큐브 서버정보 설정**
+
+- Jenkins Web → Dashboard → System Configuration → SonarQube servers
+  - Environment variables 체크
+  - SonarQube installations
+    - Name: 
+    - Server URL: 
+    - Server authentication token:
