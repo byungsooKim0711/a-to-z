@@ -1057,7 +1057,7 @@ pipeline {
 ```sh
 docker pull sonarqube
 
-docker run -d --rm -p 9000:9000 --name sonarqube sonarqube
+docker run -d -p 9000:9000 --name sonarqube sonarqube
 ```
 
 - 초기 로그인 계정은 admin/admin
@@ -1081,7 +1081,7 @@ plugins {
 
 #### SonarQube build
 
-> ./gradlew sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=squ_076a404bb91a114a83ec103707d46405bf996041
+> ./gradlew sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=squ_72e99c6d15fc584ae5d96b647d44dbc675db5488
 
 - sonar.host.url
   - 소나큐브가 설치된 서버의 정보, http://localhost:9000
@@ -1115,3 +1115,69 @@ plugins {
     - Name: 
     - Server URL: 
     - Server authentication token:
+
+#### Jenkins pipeline + SonarQube
+
+- pipeline script에 아래 step 추가
+
+```groovy
+pipeline {
+    agent any
+    tools {
+        gradle 'gradle-7.6.1'
+        jdk 'jdk-17'
+    }
+    stages {
+        // ... 생략 ... (git clone, build)
+        
+        stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube-server') { // Jenkins에 등록했던 소나큐브 정보
+                    sh 'gradle sonar'
+                }
+            }
+        }
+    }
+}
+```
+
+
+
+## Jenkins Multi Nodes
+
+> **Jenkins Slave**
+>
+> - Jenkins master의 요청 (Job) 실행
+> - 프로젝트 생성 시 특정 Slave 지정 가능
+
+
+
+### Jenkins Slave Node 추가
+
+#### #1. Jenkins 추가 설치
+
+```shell
+docker run -u root -d -p 30022:22 --name jenkins-server-s1 jenkins/jenkins:lts-jdk11
+```
+
+#### #2. SSH 설정
+
+https://unluckyjung.github.io/linux/2020/07/31/Ubuntu_ssh_connect/
+
+
+
+#### #3. 유저 생성
+
+https://jjeongil.tistory.com/1449
+
+
+
+#### #4. Master 노드 설정
+
+```shell
+
+```
+
+
+
+// todo:
