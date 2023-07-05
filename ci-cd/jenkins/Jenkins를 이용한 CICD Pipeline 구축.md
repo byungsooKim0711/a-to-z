@@ -1162,22 +1162,62 @@ docker run -u root -d -p 30022:22 --name jenkins-server-s1 jenkins/jenkins:lts-j
 
 #### #2. SSH 설정
 
-https://unluckyjung.github.io/linux/2020/07/31/Ubuntu_ssh_connect/
+```shell
+1. apt update
 
+2. apt install openssh-server
 
+3. service ssh start
 
-#### #3. 유저 생성
+기타. netstat 등의 명령어가 없으면 apt install net-tools 로 설치
+```
 
-https://jjeongil.tistory.com/1449
+#### #3. SSH 접속용 유저 생성
 
+```sh
+1. adduser ${new_username}
 
+2. 마스터 노드 서버에서 ssh ${new_username}@ip 로 접속되는지 확인
+```
 
 #### #4. Master 노드 설정
 
 ```shell
+[Jenkins-Server]
+Dashboard → Jenkins 관리 → Nodes and Clouds → New Node
+
+노드명 입력, Permanent Agent 선택
+
+Number of executors:
+Remote root directory:
+Launch method: Launch agents via SSH
 
 ```
 
+#### 특정 노드에서 실행
+
+- pipeline project
+
+  - pipeline 스크립트에서 agent 항목을 any가 아닌 특정 node의 label을 작성
+
+  ```groovy
+  pipeline {
+      agent {
+          label 'slave1' // 이부분
+      }
+      tools {
+          // ... 생략 ...
+      }
+      stages {
+          // ... 생략 ...
+      }
+  }
+  ```
+
+- 그 외
+
+  - Restrict where this project can be run 항목을 체크하고,
+  - Label Expression 항목에 특정노드 이름을 적으면 된다.
 
 
-// todo:
+
